@@ -1,0 +1,10 @@
+name = "AJ_Gunplay";
+picture = "";
+actionName = "";
+action = "";
+description = "Gunplay balance and stats overlay for AJ Weapons, Vanilla and optional Expansion.";
+author = "Blubber";
+authorID = "0";
+version = "1.0";
+overview = "AJ Gunplay adds attachment-based recoil, sway, ADS, precision and hipfire balancing plus visible item stats.";
+overviewPicture = "";
