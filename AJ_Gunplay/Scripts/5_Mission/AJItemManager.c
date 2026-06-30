@@ -31,6 +31,13 @@ modded class ItemManager
 			return;
 		}
 		
+		AJGunplayAdminConfig adminConfig = AJGetAdminConfig();
+		if (adminConfig && !adminConfig.EnableTooltipStats)
+		{
+			m_AJStatsDisplay.Show(false);
+			return;
+		}
+		
 		if (!item)
 		{
 			m_AJStatsDisplay.Show(false);

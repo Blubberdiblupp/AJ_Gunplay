@@ -110,9 +110,9 @@ class CfgMods
 		action = "";
 		hideName = 0;
 		hidePicture = 0;
-		name = "AJ Gunplay Overhaul";
-		credits = "AJ Gunplay Team";
-		author = "AJ Gunplay Team";
+		name = "";
+		credits = "";
+		author = "Blubber";
 		authorID = "0";
 		version = "1.0";
 		extra = 0;

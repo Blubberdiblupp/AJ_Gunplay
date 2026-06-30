@@ -16,6 +16,13 @@ modded class InspectMenuNew
 			return;
 		}
 		
+		AJGunplayAdminConfig adminConfig = AJGetAdminConfig();
+		if (adminConfig && !adminConfig.EnableInspectStats)
+		{
+			m_AJInspectStatsDisplay.Show(false);
+			return;
+		}
+		
 		AJDisplayData displayData = AJDisplayStats.GetDisplay(item);
 		if (!displayData)
 		{

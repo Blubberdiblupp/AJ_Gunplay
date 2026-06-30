@@ -136,7 +136,9 @@ class AJAttachmentStats
 			}
 		}
 		
-		return "";
+		string singleSlot;
+		GetGame().ConfigGetText("CfgVehicles " + itemType + " inventorySlot", singleSlot);
+		return ResolveTierFromSlot(singleSlot);
 	}
 	
 	static string ResolveTierFromSlot(string slotName)

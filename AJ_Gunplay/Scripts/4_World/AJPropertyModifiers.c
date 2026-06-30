@@ -16,7 +16,8 @@ modded class PropertyModifiers
 		}
 		
 		float recoilModifier = weapon.GetAJWeaponRecoilModifier();
-		float swayModifier = weapon.GetAJDispersion();
+		float swayModifier = weapon.GetAJAimingSwayModifier();
+		float swaySpeedModifier = weapon.GetAJAimingSwaySpeedModifier();
 		
 		if (recoilModifier > 0.0)
 		{
@@ -29,7 +30,7 @@ modded class PropertyModifiers
 		{
 			m_SwayModifiers[0] = swayModifier;
 			m_SwayModifiers[1] = swayModifier;
-			m_SwayModifiers[2] = swayModifier;
+			m_SwayModifiers[2] = swaySpeedModifier;
 		}
 		
 		AJGunplayConfig config = AJGunplayConfig.GetInstance();

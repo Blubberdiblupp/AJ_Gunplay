@@ -32,6 +32,8 @@ class AJGunplayConfig
 	float GlobalRecoilMultiplier;
 	float GlobalSwayMultiplier;
 	float GlobalAimSpeedMultiplier;
+	float GlobalHipFireMultiplier;
+	float GlobalPrecisionMultiplier;
 	bool EnableHipFireNerf;
 	bool EnableWeaponGeometryDamage;
 	float GripRecoilReduction;
@@ -88,6 +90,8 @@ class AJGunplayConfig
 		GlobalRecoilMultiplier = 1.08;
 		GlobalSwayMultiplier = 1.08;
 		GlobalAimSpeedMultiplier = 0.95;
+		GlobalHipFireMultiplier = 1.0;
+		GlobalPrecisionMultiplier = 1.0;
 		EnableHipFireNerf = true;
 		EnableWeaponGeometryDamage = true;
 		GripRecoilReduction = 0.30;
@@ -119,6 +123,7 @@ class AJGunplayConfig
 		
 		InitDefaultTierEffects();
 		InitDefaultAttachmentTiers();
+		ApplyAdminConfig(AJGetAdminConfig());
 	}
 	
 	void InitDefaultTierEffects()
@@ -732,6 +737,7 @@ class AJGunplayConfig
 		SetAttachmentTier("Mag_Expansion_Kedr_20Rnd", "StandardMag_Neutral");
 		SetAttachmentTier("Mag_Expansion_Vityaz_30Rnd", "StandardMag_Neutral");
 		SetAttachmentTier("Mag_Expansion_AWM_5rnd", "StandardMag_Neutral");
+		SetAttachmentTier("Mag_Expansion_Taser", "StandardMag_Neutral");
 	}
 	
 	void SetAttachmentTier(string className, string tierKey)
@@ -774,6 +780,127 @@ class AJGunplayConfig
 	void ResetToDefaults()
 	{
 		ApplyDefaultValues();
-		Print("[AJ Gunplay] Config reset to hardcoded defaults");
+		Print("[AJ Gunplay] Config reset to defaults plus admin JSON");
+	}
+	
+	void ApplyAdminConfig(AJGunplayAdminConfig adminConfig)
+	{
+		if (!adminConfig)
+		{
+			return;
+		}
+		
+		adminConfig.EnsureDefaults();
+		GlobalRecoilMultiplier = adminConfig.GlobalRecoilMultiplier;
+		GlobalSwayMultiplier = adminConfig.GlobalSwayMultiplier;
+		GlobalAimSpeedMultiplier = adminConfig.GlobalAimSpeedMultiplier;
+		GlobalHipFireMultiplier = adminConfig.GlobalHipFireMultiplier;
+		GlobalPrecisionMultiplier = adminConfig.GlobalPrecisionMultiplier;
+		EnableHipFireNerf = adminConfig.EnableHipFireNerf;
+		EnableWeaponGeometryDamage = adminConfig.EnableWeaponGeometryDamage;
+		DebugMode = adminConfig.DebugMode;
+		HighCapMagazineThreshold = adminConfig.HighCapMagazineThreshold;
+		
+		array<ref AJAttachmentStatOverride> customStatOverrides = new array<ref AJAttachmentStatOverride>;
+		foreach (AJAttachmentStatOverride statOverride : adminConfig.AttachmentStatOverrides)
+		{
+			if (statOverride && !IsDefaultAttachmentStatOverride(statOverride))
+			{
+				customStatOverrides.Insert(statOverride);
+			}
+		}
+		
+		foreach (AJAttachmentTierOverride tierAssignment : adminConfig.AttachmentTierOverrides)
+		{
+			if (tierAssignment && tierAssignment.ClassName != "" && tierAssignment.TierKey != "")
+			{
+				SetAttachmentTier(tierAssignment.ClassName, tierAssignment.TierKey);
+			}
+		}
+		
+		foreach (AJTierMultiplierOverride tierOverride : adminConfig.TierMultiplierOverrides)
+		{
+			ApplyTierMultiplierOverride(tierOverride);
+		}
+		
+		foreach (AJAttachmentStatOverride customStatOverride : customStatOverrides)
+		{
+			ApplyAttachmentStatOverride(customStatOverride);
+		}
+	}
+	
+	bool IsDefaultAttachmentStatOverride(AJAttachmentStatOverride statOverride)
+	{
+		if (!statOverride || statOverride.ClassName == "")
+		{
+			return false;
+		}
+		
+		if (!AttachmentTiers || !AttachmentTiers.Contains(statOverride.ClassName))
+		{
+			return false;
+		}
+		
+		string tierKey = AttachmentTiers.Get(statOverride.ClassName);
+		if (!AttachmentTierEffects || !AttachmentTierEffects.Contains(tierKey))
+		{
+			return false;
+		}
+		
+		AJTierEffect effect = AttachmentTierEffects.Get(tierKey);
+		if (!effect)
+		{
+			return false;
+		}
+		
+		return statOverride.Category == effect.Category && statOverride.Tier == effect.Tier && FloatClose(statOverride.Recoil, effect.Recoil) && FloatClose(statOverride.Sway, effect.Sway) && FloatClose(statOverride.ADS, effect.ADS) && FloatClose(statOverride.Precision, effect.Precision) && FloatClose(statOverride.HipFire, effect.HipFire);
+	}
+	
+	bool FloatClose(float a, float b)
+	{
+		float diff = a - b;
+		if (diff < 0.0)
+		{
+			diff = -diff;
+		}
+		
+		return diff < 0.0001;
+	}
+	
+	void ApplyTierMultiplierOverride(AJTierMultiplierOverride tierOverride)
+	{
+		if (!tierOverride || tierOverride.TierKey == "")
+		{
+			return;
+		}
+		
+		if (!AttachmentTierEffects || !AttachmentTierEffects.Contains(tierOverride.TierKey))
+		{
+			return;
+		}
+		
+		AJTierEffect effect = AttachmentTierEffects.Get(tierOverride.TierKey);
+		if (!effect)
+		{
+			return;
+		}
+		
+		effect.Recoil *= tierOverride.Recoil;
+		effect.Sway *= tierOverride.Sway;
+		effect.ADS *= tierOverride.ADS;
+		effect.Precision *= tierOverride.Precision;
+		effect.HipFire *= tierOverride.HipFire;
+	}
+	
+	void ApplyAttachmentStatOverride(AJAttachmentStatOverride statOverride)
+	{
+		if (!statOverride || statOverride.ClassName == "")
+		{
+			return;
+		}
+		
+		string tierKey = "Admin_" + statOverride.ClassName;
+		SetTierEffect(tierKey, statOverride.Category, statOverride.Tier, statOverride.Recoil, statOverride.Sway, statOverride.ADS, statOverride.Precision, statOverride.HipFire);
+		SetAttachmentTier(statOverride.ClassName, tierKey);
 	}
 }

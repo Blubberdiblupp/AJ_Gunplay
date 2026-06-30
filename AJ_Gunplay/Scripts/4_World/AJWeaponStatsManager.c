@@ -323,9 +323,9 @@ class AJWeaponStatsManager
 		m_CurrentRecoil = m_BaseRecoil * config.GlobalRecoilMultiplier;
 		m_CurrentSway = m_BaseSway * config.GlobalSwayMultiplier;
 		m_CurrentAimSpeed = m_BaseAimSpeed * config.GlobalAimSpeedMultiplier;
-		m_CurrentPrecision = m_BasePrecision;
+		m_CurrentPrecision = m_BasePrecision * config.GlobalPrecisionMultiplier;
 		
-		m_HipFireSpreadModifier = 1.0;
+		m_HipFireSpreadModifier = config.GlobalHipFireMultiplier;
 		m_AttachmentEffectLines.Clear();
 		
 		ApplyAttachmentModifiers(weapon, config);

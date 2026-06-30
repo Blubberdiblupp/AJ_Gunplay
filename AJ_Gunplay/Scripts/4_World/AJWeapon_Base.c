@@ -151,11 +151,11 @@ modded class Weapon_Base
 		return 1.0;
 	}
 	
-	float GetAJDispersion()
+	float GetAJAimingSwayModifier()
 	{
 		if (!AJShouldApplyGunplay())
 		{
-			return 0.0;
+			return 1.0;
 		}
 		
 		if (m_AJStatsDirty)
@@ -165,10 +165,57 @@ modded class Weapon_Base
 		
 		if (m_AJStatsManager)
 		{
-			return m_AJStatsManager.GetCurrentSway() / m_AJStatsManager.GetCurrentPrecision();
+			float rawSway = m_AJStatsManager.GetCurrentSway() / m_AJStatsManager.GetCurrentPrecision();
+			return AJGetADSSafeSwayModifier(rawSway);
 		}
 		
-		return 0.0;
+		return 1.0;
+	}
+	
+	float AJGetADSSafeSwayModifier(float rawSway)
+	{
+		return AJClampFloat(rawSway, 0.15, 1.0);
+	}
+	
+	float GetAJAimingSwaySpeedModifier()
+	{
+		if (!AJShouldApplyGunplay())
+		{
+			return 1.0;
+		}
+		
+		if (m_AJStatsDirty)
+		{
+			AJRecalculateStats();
+		}
+		
+		if (m_AJStatsManager)
+		{
+			float rawSway = m_AJStatsManager.GetCurrentSway() / m_AJStatsManager.GetCurrentPrecision();
+			return AJGetADSSafeSwaySpeedModifier(rawSway);
+		}
+		
+		return 1.0;
+	}
+	
+	float AJGetADSSafeSwaySpeedModifier(float rawSway)
+	{
+		return AJClampFloat(rawSway, 0.35, 1.0);
+	}
+	
+	float AJClampFloat(float value, float minValue, float maxValue)
+	{
+		if (value < minValue)
+		{
+			return minValue;
+		}
+		
+		if (value > maxValue)
+		{
+			return maxValue;
+		}
+		
+		return value;
 	}
 	
 	float GetAJOpticsDisableLookOverride()
@@ -235,7 +282,7 @@ modded class Weapon_Base
 	
 	bool AJShouldApplyGunplay()
 	{
-		if (!GetGame().ConfigIsExisting("CfgPatches SNAFU_Gunplay"))
+		if (AJGunplayOwnership.OwnsCommonGunplay())
 		{
 			return true;
 		}
@@ -250,6 +297,11 @@ modded class Weapon_Base
 			return true;
 		}
 		
+		if (GetType().Contains("AJs_"))
+		{
+			return true;
+		}
+		
 		if (!GetInventory())
 		{
 			return false;
@@ -258,7 +310,7 @@ modded class Weapon_Base
 		for (int i = 0; i < GetInventory().AttachmentCount(); i++)
 		{
 			EntityAI attachment = GetInventory().GetAttachmentFromIndex(i);
-			if (attachment && attachment.GetType().Contains("AJW_"))
+			if (attachment && AJGunplayOwnership.IsAJClass(attachment.GetType()))
 			{
 				return true;
 			}

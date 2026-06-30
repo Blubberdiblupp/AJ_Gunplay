@@ -1,10 +1,3 @@
-/**
- * AJNetworkOptimizer.c - hardcoded gunplay recalculation filter.
- * 
- * Only truly cosmetic items are filtered (wraps, camo, slings).
- * All gameplay-relevant attachments trigger recalculation.
- */
-
 class AJNetworkOptimizer
 {
 	protected static ref AJNetworkOptimizer m_Instance;

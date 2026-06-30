@@ -22,6 +22,13 @@ modded class ExpansionMarketMenu
 			return;
 		}
 		
+		AJGunplayAdminConfig adminConfig = AJGetAdminConfig();
+		if (adminConfig && !adminConfig.EnableExpansionMarketStats)
+		{
+			m_AJMarketStatsDisplay.Show(false);
+			return;
+		}
+		
 		AJDisplayData displayData = AJDisplayStats.GetDisplay(item, itemType, attachmentTypes);
 		if (!displayData)
 		{
